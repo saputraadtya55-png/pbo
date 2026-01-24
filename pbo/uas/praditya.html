@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Login PBO - LocalStorage</title>
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        font-family: Arial, sans-serif;
+    }
+
+    .box {
+        width: 320px;
+        padding: 25px;
+        border-radius: 15px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        color: #fff;
+        text-align: center;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .logout {
+        background: #ff4b2b;
+        color: white;
+        margin-top: 15px;
+    }
+
+    .dashboard {
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="app.login()">Login</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="box dashboard" id="dashboardBox">
+    <h2 id="welcome"></h2>
+    <p>Anda berhasil login 🚀</p>
+    <button class="logout" onclick="app.logout()">Logout</button>
+</div>
+
+<script>
+/* =====================
+   CLASS USER
+===================== */
+class User {
+    constructor(username, password) {
+        this.username = username;
+        this.password = password;
+    }
+}
+
+/* =====================
+   CLASS DATABASE
+===================== */
+class Database {
+    static init() {
+        if (!localStorage.getItem("users")) {
+            const users = [
+                new User("praditya", "praditya123"),
+                new User("egista", "egista123"),
+                new User("aqila", "aqila123")
+            ];
+            localStorage.setItem("users", JSON.stringify(users));
+        }
+    }
+
+    static getUsers() {
+        return JSON.parse(localStorage.getItem("users"));
+    }
+}
+
+/* =====================
+   CLASS AUTH
+===================== */
+class Auth {
+    login(username, password) {
+        const users = Database.getUsers();
+        return users.find(
+            user => user.username === username && user.password === password
+        );
+    }
+}
+
+/* =====================
+   CLASS UI
+===================== */
+class UI {
+    showDashboard(username) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("dashboardBox").style.display = "block";
+        document.getElementById("welcome").innerText = "Hai, " + username;
+    }
+
+    logout() {
+        localStorage.removeItem("loginUser");
+        location.reload();
+    }
+}
+
+/* =====================
+   MAIN APP
+===================== */
+class App {
+    constructor() {
+        this.auth = new Auth();
+        this.ui = new UI();
+        Database.init();
+
+        const userLogin = localStorage.getItem("loginUser");
+        if (userLogin) {
+            this.ui.showDashboard(userLogin);
+        }
+    }
+
+    login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        const user = this.auth.login(username, password);
+
+        if (!user) {
+            alert("Gagal login!");
+            return;
+        }
+
+        localStorage.setItem("loginUser", user.username);
+        this.ui.showDashboard(user.username);
+    }
+
+    logout() {
+        this.ui.logout();
+    }
+}
+
+const app = new App();
+</script>
+
+</body>
+</html>
